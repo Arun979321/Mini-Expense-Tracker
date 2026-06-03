@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useAuth } from './context/AuthContext';
 import { useExpenses } from './hooks/useExpenses';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseTable from './components/ExpenseTable';
@@ -6,9 +7,11 @@ import SummaryPanel from './components/SummaryPanel';
 import CategoryChart from './components/CategoryChart';
 import FilterBar from './components/FilterBar';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
+import DeleteAccountModal from './components/DeleteAccountModal';
 import EmptyState from './components/EmptyState';
 
 export default function App() {
+  const { user, logout, deleteAccount } = useAuth();
   const {
     loading,
     error,
@@ -30,6 +33,8 @@ export default function App() {
 
   const [editingExpense, setEditingExpense] = useState(null);
   const [deletingExpense, setDeletingExpense] = useState(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deletingAccountLoading, setDeletingAccountLoading] = useState(false);
 
   const handleAdd = useCallback(async (expense) => {
     await addExpense(expense);
@@ -45,6 +50,16 @@ export default function App() {
     await deleteExpense(deletingExpense.id);
     setDeletingExpense(null);
   }, [deleteExpense, deletingExpense]);
+
+  const handleDeleteAccount = useCallback(async (password) => {
+    setDeletingAccountLoading(true);
+    try {
+      await deleteAccount(password);
+    } catch (err) {
+      setDeletingAccountLoading(false);
+      throw err;
+    }
+  }, [deleteAccount]);
 
   const handleEdit = useCallback((expense) => {
     setEditingExpense(expense);
@@ -74,9 +89,26 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Expense Tracker</h1>
-          <p className="mt-1 text-sm text-gray-500">Track and manage your daily expenses</p>
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Expense Tracker</h1>
+            <p className="mt-1 text-sm text-gray-500">Track and manage your daily expenses</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">{user?.email}</span>
+            <button
+              onClick={logout}
+              className="text-sm text-red-600 hover:text-red-700 font-medium"
+            >
+              Sign Out
+            </button>
+            <button
+              onClick={() => setDeletingAccount(true)}
+              className="text-sm text-gray-400 hover:text-red-600 transition-colors"
+            >
+              Delete Account
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -155,6 +187,14 @@ export default function App() {
           onCancel={() => setDeletingExpense(null)}
           loading={loading}
         />
+
+        {deletingAccount && (
+          <DeleteAccountModal
+            onConfirm={handleDeleteAccount}
+            onCancel={() => setDeletingAccount(false)}
+            loading={deletingAccountLoading}
+          />
+        )}
       </div>
     </div>
   );

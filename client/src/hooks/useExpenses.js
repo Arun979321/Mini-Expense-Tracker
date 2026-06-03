@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+function authHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } : { 'Content-Type': 'application/json' };
+}
+
 export function useExpenses() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,7 +20,7 @@ export function useExpenses() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/expenses`);
+      const res = await fetch(`${API_URL}/api/expenses`, { headers: authHeaders() });
       if (!res.ok) throw new Error('Failed to fetch expenses');
       const data = await res.json();
       setExpenses(data);
@@ -36,7 +41,7 @@ export function useExpenses() {
     try {
       const res = await fetch(`${API_URL}/api/expenses`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(expense),
       });
       const data = await res.json();
@@ -57,7 +62,7 @@ export function useExpenses() {
     try {
       const res = await fetch(`${API_URL}/api/expenses/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(expense),
       });
       const data = await res.json();
@@ -78,6 +83,7 @@ export function useExpenses() {
     try {
       const res = await fetch(`${API_URL}/api/expenses/${id}`, {
         method: 'DELETE',
+        headers: authHeaders(),
       });
       if (!res.ok) {
         const data = await res.json();
