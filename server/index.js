@@ -4,14 +4,22 @@ const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://mini-expense-tracker-murex.vercel.app'
+    'https://mini-expense-tracker-murex.vercel.app/login'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
