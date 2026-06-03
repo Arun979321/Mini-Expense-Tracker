@@ -1,89 +1,130 @@
-# Exercise 2: Mini Expense Tracker
+# Mini Expense Tracker
 
-A full-stack expense tracking web application built with React and Express. Users can add, edit, delete, filter, and visualize their daily expenses with a clean, responsive dashboard.
+A full-stack expense tracking web application built with React and Express. Users can add, edit, delete, filter, and visualize daily expenses through a clean responsive dashboard. Features JWT-based authentication so each user manages their own expenses independently, with account creation, login, and account deletion.
 
 ## Live Demo
 
-Deploy link here
+[Frontend (Vercel/Netlify)](https://your-deployed-frontend-url.com)
+[Backend (Render/Railway)](https://your-deployed-backend-url.com)
 
 ## Tech Stack
 
-| Library | Reason |
-|---------|--------|
-| **Express** | Lightweight and flexible Node.js web framework for building REST APIs |
-| **Cors** | Enables cross-origin requests between the frontend and backend |
-| **uuid** | Generates unique IDs for each expense entry |
-| **React** | Component-based UI library for building interactive user interfaces |
-| **Vite** | Fast build tool and dev server for modern frontend development |
-| **Tailwind CSS** | Utility-first CSS framework for rapid and consistent styling |
-| **Recharts** | Composable charting library for React to visualize category spending |
+| Library            | Reason                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| **Express**        | Lightweight Node.js framework for building REST APIs          |
+| **bcryptjs**       | Password hashing before storing user credentials              |
+| **jsonwebtoken**   | Stateless JWT-based authentication tokens                     |
+| **Cors**           | Enables cross-origin requests between frontend and backend    |
+| **uuid**           | Generates unique IDs for expenses and users                   |
+| **React**          | Component-based UI library for interactive interfaces         |
+| **Vite**           | Fast build tool and dev server                                |
+| **Tailwind CSS**   | Utility-first CSS framework for rapid consistent styling      |
+| **Recharts**       | Composable React charting library for category spending       |
+| **react-router-dom** | Client-side routing for login, signup, and protected pages |
 
 ## How to Run Locally
 
+**Prerequisites:** Node.js (v18 or later)
+
 ```bash
-git clone <repo>
-cd expense-tracker
+# Clone the repository
+git clone https://github.com/Arun979321/Mini-Expense-Tracker.git
+cd Mini-Expense-Tracker
 
-# Backend
-cd server && npm install && node index.js
+# Backend setup
+cd server
+npm install
+npm start
+# Server runs on http://localhost:5000
 
-# Frontend (new terminal)
-cd client && npm install && npm run dev
+# Frontend setup (new terminal)
+cd client
+npm install
+npm run dev
+# Client runs on http://localhost:5173
 ```
+
+Then open http://localhost:5173 in your browser. Register a new account to get started.
 
 ## API Documentation
 
-| Method | Path | Body | Response |
-|--------|------|------|----------|
-| GET | `/api/expenses` | — | Array of all expenses (sorted by date descending) |
-| POST | `/api/expenses` | `{ amount, category, date, note? }` | Created expense object with id and createdAt |
-| PUT | `/api/expenses/:id` | `{ amount, category, date, note? }` | Updated expense object |
-| DELETE | `/api/expenses/:id` | — | `{ message: "Expense deleted", expense: {...} }` |
-| GET | `/api/expenses/summary` | — | `{ totalThisMonth, totalByCategory, highestExpense }` |
+### Authentication
+
+| Method   | Path                 | Auth Required | Body                                     | Response                                                        |
+| -------- | -------------------- | ------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| `POST`   | `/api/auth/register` | No            | `{ "email": "string", "password": "string" }` | `{ "token": "string", "user": { "id": "string", "email": "string" } }` |
+| `POST`   | `/api/auth/login`    | No            | `{ "email": "string", "password": "string" }` | `{ "token": "string", "user": { "id": "string", "email": "string" } }` |
+| `DELETE` | `/api/auth/account`  | Yes           | `{ "password": "string" }`               | `{ "message": "Account deleted successfully" }`                |
+
+### Expenses (all endpoints require `Authorization: Bearer <token>` header)
+
+| Method   | Path                  | Body                                                | Response                                                              |
+| -------- | --------------------- | --------------------------------------------------- | --------------------------------------------------------------------- |
+| `GET`    | `/api/expenses`       | —                                                   | Array of user&apos;s expenses (sorted by date descending)             |
+| `GET`    | `/api/expenses/summary` | —                                                 | `{ "totalThisMonth": number, "totalByCategory": object, "highestExpense": object }` |
+| `POST`   | `/api/expenses`       | `{ "amount": number, "category": string, "date": "YYYY-MM-DD", "note?": string }` | Created expense object with `id` and `createdAt`                      |
+| `PUT`    | `/api/expenses/:id`   | `{ "amount": number, "category": string, "date": "YYYY-MM-DD", "note?": string }` | Updated expense object                                                |
+| `DELETE` | `/api/expenses/:id`   | —                                                   | `{ "message": "Expense deleted", "expense": {...} }`                  |
+
+**Valid categories:** `Food`, `Transport`, `Bills`, `Entertainment`, `Other`
 
 ## Project Structure
 
 ```
-expense-tracker/
-├── README.md                      # Project documentation
+Mini-Expense-Tracker/
+├── .gitignore                   # Git ignore rules
+├── README.md                    # Project documentation
 ├── server/
-│   ├── package.json               # Backend dependencies and scripts
-│   ├── index.js                   # Express app entry point (CORS, JSON parsing, routes)
+│   ├── package.json             # Backend dependencies
+│   ├── index.js                 # Express app entry point (CORS, routes)
+│   ├── middleware/
+│   │   └── auth.js              # JWT authentication middleware
 │   ├── routes/
-│   │   └── expenses.js            # REST API route handlers for expenses CRUD + summary
+│   │   ├── auth.js              # Register, login, delete account endpoints
+│   │   └── expenses.js          # CRUD + summary endpoints (protected)
 │   ├── utils/
-│   │   ├── fileHelpers.js         # Read/write expenses from/to JSON file
-│   │   └── validation.js          # Expense field validation logic
+│   │   ├── fileHelpers.js       # Read/write expenses JSON file
+│   │   ├── userHelpers.js       # Read/write users JSON file
+│   │   └── validation.js        # Expense field validation
 │   └── data/
-│       └── expenses.json          # Persistent storage for expenses
+│       ├── expenses.json        # Persistent expense storage
+│       └── users.json           # Persistent user storage (auto-created)
 └── client/
-    ├── package.json               # Frontend dependencies and scripts
-    ├── .env                       # VITE_API_URL environment variable
-    ├── index.html                 # HTML entry point with Google Fonts
-    ├── vite.config.js             # Vite configuration (React plugin, port 5173)
-    ├── tailwind.config.js         # Tailwind CSS configuration
-    ├── postcss.config.js          # PostCSS configuration for Tailwind
+    ├── package.json             # Frontend dependencies
+    ├── .env                     # VITE_API_URL environment variable
+    ├── index.html               # HTML entry point
+    ├── vite.config.js           # Vite configuration
+    ├── tailwind.config.js       # Tailwind CSS configuration
+    ├── postcss.config.js        # PostCSS configuration
     └── src/
-        ├── main.jsx               # React DOM entry point
-        ├── App.jsx                # Root layout component composing all children
-        ├── index.css              # Tailwind directives
+        ├── main.jsx             # React DOM entry with BrowserRouter
+        ├── App.jsx              # Root layout with auth-aware header
+        ├── index.css            # Tailwind directives
+        ├── context/
+        │   └── AuthContext.jsx  # Auth state, login/signup/logout/delete account
         ├── hooks/
-        │   └── useExpenses.js     # Custom hook for all API calls and state management
+        │   └── useExpenses.js   # Custom hook for all API calls with JWT
         ├── utils/
-        │   ├── formatCurrency.js  # Indian locale currency formatting (₹X,XXX.XX)
-        │   └── dateHelpers.js     # Date range and formatting helpers
+        │   ├── formatCurrency.js  # ₹ currency formatting
+        │   └── dateHelpers.js     # Date range helpers
         └── components/
-            ├── ExpenseForm.jsx        # Add/edit expense form with validation
-            ├── ExpenseTable.jsx       # Expense list with edit/delete actions
-            ├── SummaryPanel.jsx       # Stats cards (month total, category breakdown, highest)
-            ├── CategoryChart.jsx      # Recharts bar chart for category spending
-            ├── FilterBar.jsx          # Category and date range filters
-            ├── DeleteConfirmModal.jsx # Confirmation dialog for deletions
-            └── EmptyState.jsx         # Empty state with message
+            ├── ExpenseForm.jsx        # Add/edit expense form
+            ├── ExpenseTable.jsx       # Expense list with actions
+            ├── SummaryPanel.jsx       # Stats cards
+            ├── CategoryChart.jsx      # Bar chart by category
+            ├── FilterBar.jsx          # Category and date filters
+            ├── DeleteConfirmModal.jsx # Confirmation for expense deletion
+            ├── DeleteAccountModal.jsx  # Password confirmation for account deletion
+            ├── EmptyState.jsx         # Empty state placeholder
+            ├── Login.jsx              # Sign-in form
+            ├── Signup.jsx             # Registration form
+            └── ProtectedRoute.jsx     # Redirects to /login if unauthenticated
 ```
 
 ## Next Steps
 
-1. **Persistent database** — Replace the JSON file with SQLite or PostgreSQL for better concurrency and data integrity.
-2. **User authentication** — Add login/register so multiple users can manage their own expenses independently.
-3. **Monthly budgets** — Allow users to set monthly spending limits per category and show progress bars / alerts when nearing the limit.
+1. **Persistent database** — Replace JSON files with SQLite or PostgreSQL for better concurrency and data integrity.
+2. **Monthly budgets** — Allow users to set monthly spending limits per category with progress bars and alerts.
+3. **Email verification** — Send a confirmation email on registration to verify user accounts.
+4. **Password reset** — Add a "forgot password" flow with email-based reset tokens.
+5. **Deployment CI/CD** — Automate frontend and backend deployment via GitHub Actions.
