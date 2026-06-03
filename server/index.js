@@ -9,8 +9,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://mini-expense-tracker-murex.vercel.app',
-    'https://mini-expense-tracker-murex.vercel.app/login'
+    'https://mini-expense-tracker-murex.vercel.app'
   ],
   credentials: true
 }));
