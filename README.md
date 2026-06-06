@@ -4,8 +4,8 @@ A full-stack expense tracking web application built with React and Express. User
 
 ## Live Demo
 
-[Frontend (Vercel/Netlify)](https://your-deployed-frontend-url.com)
-[Backend (Render/Railway)](https://your-deployed-backend-url.com)
+[Frontend (Vercel/Netlify)](https://mini-expense-tracker-murex.vercel.app/)
+[Backend (Render/Railway)](https://mini-expense-tracker-mhze.onrender.com)
 
 ## Tech Stack
 
